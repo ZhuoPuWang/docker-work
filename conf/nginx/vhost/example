@@ -1,0 +1,36 @@
+server {
+    listen 80;
+    server_name example.com;
+    root /www/wwwroot;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        # http_realip_module 指定REMOTE_ADDR从哪个header头获取客户端IP
+        set_real_ip_from 0.0.0.0/0;
+        real_ip_header X-Real-IP;
+        real_ip_recursive on;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_param SCRIPT_FILENAME  /$document_root$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_buffer_size       128k;
+        fastcgi_buffers           32 32k;
+        fastcgi_busy_buffers_size 128k;
+    }
+
+    location ~ .*\.(gif|jpg|jpeg|png|bmp|swf|flv|mp4|ico)$ {
+        expires 30d;
+        access_log off;
+    }
+
+    location ~ .*\.(js|css)?$ {
+        expires 7d;
+        access_log off;
+    }
+
+    access_log /tmp/nginx_access.log;
+    error_log /tmp/nginx_error.log;
+}

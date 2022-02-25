@@ -1,0 +1,405 @@
+version: "3"
+
+
+services:
+  jwschain:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: jwschain
+    hostname: jwschain
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-server:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php7:/etc/php7:cached
+      - ./conf/supervisor/supervisord.conf:/etc/supervisord.conf:cached
+      - ./conf/supervisor/jwschain:/etc/supervisor.d:cached
+      - ./conf/nginx/vhost/api.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain/nginx_error.log:/tmp/nginx_error.log:cached
+    links:
+      - "redis:myredis"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.2
+
+
+  jwschain-app:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: jwschain-app
+    hostname: jwschain-app
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-server-app:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php7:/etc/php7:cached
+      - ./conf/supervisor/supervisord.conf:/etc/supervisord.conf:cached
+      - ./conf/nginx/vhost/app.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain/nginx_error.log:/tmp/nginx_error.log:cached
+    links:
+      - "redis:myredis"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.12
+
+
+  jwschain-operation:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: jwschain-operation
+    hostname: jwschain-operation
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-operation:/www/wwwroot:cached
+      - ./conf/nginx/vhost/operation.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain-operation/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain-operation/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain-operation/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain-operation/nginx_error.log:/tmp/nginx_error.log:cached
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.3
+
+  opapi:
+    environment:
+      - NGINX_UID=1000
+      - DOMAIN_NAME=opapi.qa.jwschain.cn
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: opapi
+    hostname: opapi
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-opapi:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php7:/etc/php7:cached
+      - ./conf/supervisor/supervisord.conf:/etc/supervisord.conf:cached
+      - ./conf/nginx/vhost/opapi.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/opapi/container_start.log:/tmp/start.log:cached
+      - ./logs/opapi/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/opapi/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/opapi/nginx_error.log:/tmp/nginx_error.log:cached
+    extra_hosts:
+      - "api.qa.jwschain.cn:172.19.0.2"
+    links:
+      - "redis:myredis"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.4
+
+  jwschain-qrcode:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: jwschain-qrcode
+    hostname: jwschain-qrcode
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-qrcode:/www/wwwroot:cached
+      - ./conf/nginx/vhost/qrcode.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain-qrcode/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain-qrcode/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain-qrcode/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain-qrcode/nginx_error.log:/tmp/nginx_error.log:cached
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.5
+
+  jwschain-shipper-front:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: jwschain-shipper-front
+    hostname: jwschain-shipper-front
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-shipper-front:/www/wwwroot:cached
+      - ./conf/nginx/vhost/shipper.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain-shipper-front/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain-shipper-front/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain-shipper-front/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain-shipper-front/nginx_error.log:/tmp/nginx_error.log:cached
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.6
+
+  jwschain-dev:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: jwschain-dev
+    hostname: jwschain-dev
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-server-dev:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php7:/etc/php7:cached
+      - ./conf/supervisor/supervisord.conf:/etc/supervisord.conf:cached
+      - ./conf/nginx/vhost/api.dev.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain-dev/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain-dev/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain-dev/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain-dev/nginx_error.log:/tmp/nginx_error.log:cached
+    links:
+      - "redis:myredis"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.7
+
+  opapi-dev:
+    environment:
+      - NGINX_UID=1000
+      - DOMAIN_NAME=opapi.qa.jwschain.cn
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: opapi-dev
+    hostname: opapi-dev
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-opapi-dev:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php7:/etc/php7:cached
+      - ./conf/nginx/vhost/opapi.dev.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/opapi-dev/container_start.log:/tmp/start.log:cached
+      - ./logs/opapi-dev/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/opapi-dev/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/opapi-dev/nginx_error.log:/tmp/nginx_error.log:cached
+    extra_hosts:
+      - "api.dev.jwschain.cn:172.19.0.7"
+    links:
+      - "redis:myredis"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.8
+
+  jwschain-op:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: jwschain-op
+    hostname: jwschain-op
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-op:/www/wwwroot:cached
+      - ./conf/nginx/vhost/op.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain-op/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain-op/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain-op/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain-op/nginx_error.log:/tmp/nginx_error.log:cached
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.9
+
+  debuggerapi:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-php8:0.0.3"
+    container_name: debuggerapi
+    hostname: debuggerapi
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-debugger-server:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php8:/etc/php8:cached
+      - ./conf/supervisor/supervisord.conf:/etc/supervisord.conf:cached
+      - ./conf/nginx/vhost/debuggerapi.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain-debuggerapi/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain-debuggerapi/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain-debuggerapi/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain-debuggerapi/nginx_error.log:/tmp/nginx_error.log:cached
+    links:
+      - "redis:myredis"
+    extra_hosts:
+      - "api.qa.jwschain.cn:172.19.0.2"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.13
+
+  debugger:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-php8:0.0.3"
+    container_name: debugger
+    hostname: debugger
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-debugger-front:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/nginx/vhost/debugger.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain-debugger/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain-debugger/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain-debugger/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain-debugger/nginx_error.log:/tmp/nginx_error.log:cached
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.14
+
+
+  jwschain-operation:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: jwschain-operation
+    hostname: jwschain-operation
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jwschain-operation:/www/wwwroot:cached
+      - ./conf/nginx/vhost/operation.qa.jwschain.cn.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/jwschain-operation/container_start.log:/tmp/start.log:cached
+      - ./logs/jwschain-operation/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/jwschain-operation/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/jwschain-operation/nginx_error.log:/tmp/nginx_error.log:cached
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.10
+
+
+  frpc:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/frp:latest"
+    container_name: frpc
+    hostname: frpc
+    restart: "no"
+    volumes:
+      - /Users/lihua/Code/project/local-webapp/frp/conf:/frp/conf:cached
+      - ./logs/frpc/container_start.log:/tmp/start.log:cached
+    command: /frp/frpc -c /frp/conf/frpc.ini
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.254
+
+  frps:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/frp:latest"
+    container_name: frps
+    hostname: frps
+    restart: "no"
+    volumes:
+      - ./conf/frps/conf/frps.ini:/frps/conf/frps.ini:cached
+      - ./logs/frp/container_start.log:/tmp/start.log:cached
+    ports:
+      - "5100:5100"
+      - "5101:5101"
+      - "7000:7000"
+      - "7500:7500"
+    network_mode: "bridge"
+    command: /frp/frps -c /frps/conf/frps.ini
+      #net-web:
+        #ipv4_address: 172.19.0.154
+
+  mysql:
+    environment:
+      - MYSQL_ROOT_PASSWORD=888888
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-mysql:8.0.22"
+    container_name: mysql
+    hostname: mysql
+    restart: "no"
+    privileged: true
+    volumes:
+      - /home/jwbh/project/mysql/data:/var/lib/mysql:cached
+      - ./conf/mysql:/etc/mysql:cached
+    ports:
+      - 3306:3306
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.253
+
+  redis:
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-redis:latest"
+    container_name: redis
+    hostname: myredis
+    restart: "no"
+    volumes:
+      - ./conf/redis/redis.conf:/etc/redis.conf:cached
+      - ./data/redis/:/var/lib/redis:cached
+    ports:
+      - 6379:6379
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.252
+
+  portainer:
+    image: "portainer/portainer:latest"
+    container_name: portainer
+    hostname: portainer
+    restart: "no"
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:cached
+      - /Users/lihua/Code/project/portainer/data:/data:cached
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.251
+
+  nginx:
+    environment:
+      - NGINX_UID=1008
+    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
+    container_name: nginx
+    hostname: nginx
+    working_dir: /www/wwwroot
+    restart: "no"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php5:/etc/php5:cached
+      - ./conf/nginx/vhost/nginx.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/nginx:/tmp:cached
+      - ./ssl:/cert:cached
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.250
+
+  jwschain-mongo:
+    environment:
+      TZ: Asia/Shanghai
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 888888
+    image: "mongo:latest"
+    container_name: jwschain-mongo
+    hostname: jwschain-mongo
+    restart: "no"
+    tty: true
+    user: root
+    command: mongod --config /etc/mongo/mongod.conf
+    volumes:
+      - ./conf/mongo/mongod.conf:/etc/mongo/mongod.conf
+      - ./conf/mongo/localtime:/etc/localtime
+      - /home/jwbh/project/mongo/db:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.249
+
+
+  jumpserver:
+    environment:
+      - SECRET_KEY=639G8QJufunRPpyXb5dI6BhHpcRqcqwnqpvDLOk08A4B3ySmQo
+      - BOOTSTRAP_TOKEN=639G8QJufunRPpyXb5dI6BhHpcRqcqwnqpvDLOk08A4B3ySmQo
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=888888
+      - DB_NAME=jumpserver
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+    image: "jumpserver/jms_all:latest"
+    container_name: jumpserver
+    hostname: jumpserver
+    restart: "no"
+    volumes:
+      - /home/jwbh/project/jumpserver:/opt/jumpserver/data/media
+    ports:
+      - "8088:80"
+      - "2222:2222"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.246
+
+networks:
+  net-web:
+    ipam:
+      config:
+        - subnet: 172.19.0.0/24

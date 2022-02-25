@@ -1,0 +1,52 @@
+FROM alpine:3.12
+
+MAINTAINER dalei <lhnjxdqq@aliyun.com>
+
+ADD ./extra /root/extra
+
+ENV ENV /root/.ashrc
+
+RUN mv /etc/apk/repositories /etc/apk/repositories.bak \
+    && echo "https://mirrors.aliyun.com/alpine/v3.12/main" > /etc/apk/repositories \
+    && echo "https://mirrors.aliyun.com/alpine/v3.12/community" >> /etc/apk/repositories \
+    && echo "https://mirrors.aliyun.com/alpine/edge/testing" >> /etc/apk/repositories \
+    && echo "https://mirrors.aliyun.com/alpine/edge/community" >> /etc/apk/repositories \
+    && apk update
+
+RUN apk add --no-cache bash tzdata nginx \
+    php8 php8-fpm php8-opcache php8-bcmath php8-ctype php8-curl php8-dom \
+    php8-fileinfo php8-gd php8-gettext php8-iconv php8-json php8-mbstring \
+    php8-mysqli php8-mysqlnd php8-openssl php8-pcntl php8-pdo php8-pdo_mysql \
+    php8-pdo_sqlite php8-phar php8-posix php8-redis php8-session php8-shmop \
+    php8-simplexml php8-soap php8-sockets php8-sqlite3 php8-sysvsem php8-tokenizer \
+    php8-xml php8-xmlreader php8-xmlwriter php8-xsl php8-zip \
+    supervisor libstdc++ git vim curl zsh openssl openssl-dev \
+    imagemagick imagemagick-dev libzip libzip-dev
+
+RUN adduser -DH www \
+    && mkdir -p /run/nginx \
+    && mkdir -p /usr/local/sbin \
+    && mkdir -p /etc/php8/extra \
+    && mkdir -p /var/tmp/nginx \
+    && mv /root/extra/oh-my-zsh /root/.oh-my-zsh \
+    && mv /root/extra/zshrc /root/.zshrc \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && cp /root/extra/composer2.phar /usr/local/bin/composer \
+    && cp /root/extra/php8/extension/* /usr/lib/php8/modules \
+    && cp /root/extra/php8/conf.d/* /etc/php8/conf.d \
+    && cp /root/extra/php8start.sh /php8start.sh \
+    && cp /root/extra/ca-bundle.crt /etc/php8/extra/ca-bundle.crt \
+    && ln -s /usr/bin/php8 /usr/local/bin/php \
+    && ln -s /usr/sbin/php-fpm8 /usr/local/sbin/php-fpm \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && echo "alias vi='vim'" >> /root/.zshrc \
+    && echo "alias psfpm='ps aux | grep fpm'" >> /root/.zshrc \
+    && echo "alias psngx='ps aux | grep nginx'" >> /root/.zshrc \
+    && echo "alias ngt='nginx -t'" >> /root/.zshrc \
+    && echo "alias ngsr='nginx -s reload'" >> /root/.zshrc \
+    && echo "curl.cainfo=/etc/php8/extra/ca-bundle.crt" >> /etc/php8/conf.d/00_curl.ini \
+    && chmod +x /usr/local/bin/composer \
+    && chmod +x /php8start.sh \
+    && rm -rf /tmp/* /var/cache/apk/* /root/extra
+
+ENTRYPOINT ["/php8start.sh"]

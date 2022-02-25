@@ -1,0 +1,50 @@
+FROM alpine:3.12
+
+MAINTAINER dalei <lhnjxdqq@aliyun.com>
+
+ADD ./extra /root/extra
+
+ENV ENV /root/.ashrc
+
+RUN mv /etc/apk/repositories /etc/apk/repositories.bak \
+    && echo "https://mirrors.aliyun.com/alpine/v3.12/main" > /etc/apk/repositories \
+    && echo "https://mirrors.aliyun.com/alpine/v3.12/community" >> /etc/apk/repositories \
+    && apk update
+
+RUN apk add --no-cache bash tzdata nginx \
+    php7 php7-fpm php7-opcache php7-bcmath php7-ctype php7-curl php7-dom \
+    php7-fileinfo php7-gd php7-gettext php7-iconv php7-json php7-mbstring \
+    php7-mysqli php7-mysqlnd php7-openssl php7-pcntl php7-pdo php7-pdo_mysql  \
+    php7-pdo_sqlite php7-phar php7-posix php7-redis php7-session php7-shmop \
+    php7-simplexml php7-soap php7-sockets php7-sqlite3 php7-sysvsem php7-tokenizer \
+    php7-xml php7-xmlreader php7-xmlrpc php7-xmlwriter php7-xsl php7-zip \
+    libzip=1.6.1-r1 supervisor libstdc++ git vim curl zsh openssl openssl-dev \
+    imagemagick imagemagick-dev php7-pgsql php7-pdo_pgsql swoole
+
+RUN adduser -DH www \
+    && mkdir -p /run/nginx \
+    && mkdir -p /usr/local/sbin \
+    && mkdir -p /etc/php7/extra \
+    && mkdir -p /var/tmp/nginx \
+    && mv /root/extra/oh-my-zsh /root/.oh-my-zsh \
+    && mv /root/extra/zshrc /root/.zshrc \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && cp /root/extra/composer.phar /usr/local/bin/composer \
+    && cp /root/extra/php73/extension/* /usr/lib/php7/modules \
+    && cp /root/extra/php73/conf.d/* /etc/php7/conf.d \
+    && cp /root/extra/start.sh /start.sh \
+    && cp /root/extra/ca-bundle.crt /etc/php7/extra/ca-bundle.crt \
+    && ln -s /usr/bin/php7 /usr/local/bin/php \
+    && ln -s /usr/sbin/php-fpm7 /usr/local/sbin/php-fpm \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && echo "alias vi='vim'" >> /root/.zshrc \
+    && echo "alias psfpm='ps aux | grep fpm'" >> /root/.zshrc \
+    && echo "alias psngx='ps aux | grep nginx'" >> /root/.zshrc \
+    && echo "alias ngt='nginx -t'" >> /root/.zshrc \
+    && echo "alias ngsr='nginx -s reload'" >> /root/.zshrc \
+    && echo "curl.cainfo=/etc/php7/extra/ca-bundle.crt" >> /etc/php7/conf.d/00_curl.ini \
+    && chmod +x /usr/local/bin/composer \
+    && chmod +x /start.sh \
+    && rm -rf /tmp/* /var/cache/apk/* /root/extra
+
+ENTRYPOINT ["/start.sh"]

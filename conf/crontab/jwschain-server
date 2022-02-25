@@ -1,0 +1,1 @@
+*   *   *   *   *   su -m www -c '/usr/bin/php /www/wwwroot/artisan schedule:run >> /dev/null 2>&1'

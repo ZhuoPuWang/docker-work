@@ -1,0 +1,4 @@
+FROM alpine:3.10
+MAINTAINER dalei<727357176@qq.com>
+RUN apk update && apk add redis && rm -rf /tmp/* /var/cache/apk/*
+CMD [ "redis-server", "/etc/redis.conf" ]
