@@ -4,7 +4,7 @@ version: "3"
 services:
   jwschain:
 #    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
-    image: "php:7.0.1"
+    image: "registry.cn-beijing.aliyuncs.com/wangzhuopu/php:7.0.2"
     container_name: jwschain
     hostname: jwschain
     working_dir: /www/wwwroot
@@ -55,7 +55,7 @@ services:
 #      - NGINX_UID=1000
 #      - DOMAIN_NAME=opapi.qa.jwschain.cn
 #    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
-    image: "php8:0.0.1"
+    image: "php:7.0.2"
     container_name: opapi
     hostname: opapi
     working_dir: /www/wwwroot
@@ -77,6 +77,31 @@ services:
     networks:
       net-web:
         ipv4_address: 172.19.0.4
+
+  word-press:
+    image: "php:7.0.2"
+    container_name: word-press
+    hostname: word-press
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - D:\PHP\www\server:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php7:/etc/php7:cached
+      - ./conf/supervisor/supervisord.conf:/etc/supervisord.conf:cached
+      - ./conf/nginx/vhost/word-press.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/word-press/container_start.log:/tmp/start.log:cached
+      - ./logs/word-press/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/word-press/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/word-press/nginx_error.log:/tmp/nginx_error.log:cached
+    ports:
+      - 1236:1236
+      - 2346:2346
+    links:
+      - "redis:myredis"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.20
 
   jwschain-qrcode:
     image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
@@ -374,7 +399,7 @@ services:
       - DB_USER=root
       - DB_PASSWORD=888888
       - DB_NAME=jumpserver
-      - REDIS_HOST=redis
+      - REDIS_HOST=myredis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
     image: "jumpserver/jms_all:latest"
@@ -382,7 +407,9 @@ services:
     hostname: jumpserver
     restart: "no"
     volumes:
-      - /home/jwbh/project/jumpserver:/opt/jumpserver/data/media
+      - D:\PHP\jumpserver\data:/opt/jumpserver/data/media
+#      - ./conf/nginx/conf:/etc/nginx:cached
+#      - ./conf/nginx/vhost/jumpserver.conf:/etc/nginx/conf.d/www.conf:cached
     ports:
       - "8088:80"
       - "2222:2222"

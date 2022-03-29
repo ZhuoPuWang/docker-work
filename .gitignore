@@ -1,4 +1,5 @@
 .idea
+docker-compose.yml
 conf/frp/conf/frpc.ini
 .history
 data

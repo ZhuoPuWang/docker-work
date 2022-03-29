@@ -108,25 +108,3 @@ docker-compose up -d jwschain
 |---kibana.yml kibana配置文件
 ```
 
-
-安装docker 和编译docker 遇到的问题汇总
-
-
-创建镜像  文件格式不正确
-
-standard_init_linux.go:228: exec user process caused: no such file or directory
-
-因为Dockerfile 文件编码不正确
-需要linux格式，但是windows上错误
-打包文件格式错误
-
-解决办法
-使用git bash 打开文件
-set ff=unix  
-保存并推出
-
-修改extra 文件夹下的所有文件的编码格式为unix 
-for i in `find . -type f`;do vi $i -c 'set ff=unix | wq';done
-
-
-
