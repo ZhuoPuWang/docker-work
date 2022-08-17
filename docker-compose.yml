@@ -78,22 +78,22 @@ services:
       net-web:
         ipv4_address: 172.19.0.4
 
-  word-press:
+  hongdou:
     image: "php:7.0.2"
-    container_name: word-press
-    hostname: word-press
+    container_name: hongdou
+    hostname: hongdou
     working_dir: /www/wwwroot
     restart: "no"
     volumes:
-      - D:\PHP\www\server:/www/wwwroot:cached
+      - D:\PHP\www\hongdou:/www/wwwroot:cached
       - ./conf/nginx/conf:/etc/nginx:cached
       - ./conf/php7:/etc/php7:cached
       - ./conf/supervisor/supervisord.conf:/etc/supervisord.conf:cached
-      - ./conf/nginx/vhost/word-press.conf:/etc/nginx/conf.d/www.conf:cached
-      - ./logs/word-press/container_start.log:/tmp/start.log:cached
-      - ./logs/word-press/fpm_error.log:/tmp/fpm_error.log:cached
-      - ./logs/word-press/nginx_access.log:/tmp/nginx_access.log:cached
-      - ./logs/word-press/nginx_error.log:/tmp/nginx_error.log:cached
+      - ./conf/nginx/vhost/hongdou.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/hongdou/container_start.log:/tmp/start.log:cached
+      - ./logs/hongdou/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/hongdou/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/hongdou/nginx_error.log:/tmp/nginx_error.log:cached
     ports:
       - 1236:1236
       - 2346:2346
@@ -102,6 +102,46 @@ services:
     networks:
       net-web:
         ipv4_address: 172.19.0.20
+
+  swoole:
+    image: "php8:v2"
+    container_name: swoole
+    hostname: swoole
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - D:\PHP\www\swoole:/www/wwwroot:cached
+      - ./conf/nginx/conf:/etc/nginx:cached
+      - ./conf/php8:/etc/php8:cached
+      - ./conf/supervisor/supervisord.conf:/etc/supervisord.conf:cached
+      - ./conf/nginx/vhost/swoole.conf:/etc/nginx/conf.d/www.conf:cached
+      - ./logs/swoole/container_start.log:/tmp/start.log:cached
+      - ./logs/swoole/fpm_error.log:/tmp/fpm_error.log:cached
+      - ./logs/swoole/nginx_access.log:/tmp/nginx_access.log:cached
+      - ./logs/swoole/nginx_error.log:/tmp/nginx_error.log:cached
+    ports:
+      - 1215:1215
+    links:
+      - "redis:myredis"
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.21
+
+  python:
+    image: "python:3.8"
+    container_name: python
+    hostname: python
+    working_dir: /www/wwwroot
+    restart: "no"
+    volumes:
+      - D:\PHP\www\Python:/code
+    ports:
+      - 8080:8080
+    privileged: true
+    command: bash /code/run.sh
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.60
 
   jwschain-qrcode:
     image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain:0.0.6"
@@ -388,6 +428,118 @@ services:
     networks:
       net-web:
         ipv4_address: 172.19.0.249
+
+  redis1:
+    #    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-redis:latest"
+    image: "redis:0.0.1"
+    container_name: redis1
+    hostname: myredis1
+    restart: "no"
+    volumes:
+      - ./conf/redis/redis1.conf:/etc/redis.conf:cached
+      - D:\PHP\redis1:/var/lib/redis:cached
+    command: redis-server  --requirepass 12345678 --masterauth 12345678
+    ports:
+      - 6381:6381
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.201
+
+  redis2:
+    #    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-redis:latest"
+    image: "redis:0.0.1"
+    container_name: redis2
+    hostname: myredis2
+    restart: "no"
+    volumes:
+      - ./conf/redis/redis2.conf:/etc/redis.conf:cached
+      - D:\PHP\redis2:/var/lib/redis:cached
+    ports:
+      - 6382:6382
+    command: redis-server  --slaveof  myredis1 6379 --requirepass 12345678 --masterauth 12345678
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.202
+
+  redis3:
+    #    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-redis:latest"
+    image: "redis:0.0.1"
+    container_name: redis3
+    hostname: myredis3
+    restart: "no"
+    volumes:
+      - ./conf/redis/redis3.conf:/etc/redis.conf:cached
+      - D:\PHP\redis3:/var/lib/redis:cached
+    ports:
+      - 6383:6383
+    command: redis-server --slaveof  myredis1 6379 --requirepass 12345678 --masterauth 12345678
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.203
+
+#  docker run -it --name sentinel26379 -p 26379:26379 -v /usr/redis/conf26379/sentinel.conf:/sentinel.conf -v /usr/redis/data26379:/data --privileged=true ccee4cdf984f redis-sentinel /sentinel.conf
+  sentinel1:
+    #    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-redis:latest"
+    image: "redis:0.0.1"
+    container_name: sentinel1
+    hostname: mysentinel1
+    restart: "no"
+    volumes:
+      - ./conf/redis/sentinel1Redis.conf:/etc/redis.conf:cached
+      - ./conf/redis/sentinel1.conf:/etc/sentinel.conf:cached
+      - ./conf/redis/sentinel1.conf:/sentinel.conf:cached
+      - D:\PHP\sentinel1:/var/lib/redis:cached
+      - D:\PHP\sentinel1:/data
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+    command: redis-sentinel /sentinel.conf
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.204
+
+  sentinel2:
+    #    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-redis:latest"
+    image: "redis:0.0.1"
+    container_name: sentinel2
+    hostname: mysentinel2
+    restart: "no"
+    volumes:
+      - ./conf/redis/sentinel1Redis.conf:/etc/redis.conf:cached
+      - ./conf/redis/sentinel2.conf:/etc/sentinel.conf:cached
+      - ./conf/redis/sentinel2.conf:/sentinel.conf:cached
+      - D:\PHP\sentinel2:/var/lib/redis:cached
+      - D:\PHP\sentinel2:/data
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+    command: redis-sentinel /sentinel.conf
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.205
+
+  sentinel3:
+    #    image: "registry.cn-huhehaote.aliyuncs.com/hdd_images/jwschain-redis:latest"
+    image: "redis:0.0.1"
+    container_name: sentinel3
+    hostname: mysentinel3
+    restart: "no"
+    volumes:
+      - ./conf/redis/sentinel1Redis.conf:/etc/redis.conf:cached
+      - ./conf/redis/sentinel3.conf:/etc/sentinel.conf:cached
+      - ./conf/redis/sentinel3.conf:/sentinel.conf:cached
+      - D:\PHP\sentinel3:/var/lib/redis:cached
+      - D:\PHP\sentinel3:/data
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+    command: redis-sentinel /sentinel.conf
+    networks:
+      net-web:
+        ipv4_address: 172.19.0.206
 
 
   jumpserver:
